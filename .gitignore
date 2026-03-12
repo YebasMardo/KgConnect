@@ -1,0 +1,19 @@
+# Frontend dependencies
+frontend/node_modules
+
+# Backend dependencies
+backend/vendor/
+backend/.env.local
+backend/.env.*.local
+backend/.env
+
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

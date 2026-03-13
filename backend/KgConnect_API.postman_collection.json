@@ -1,0 +1,435 @@
+{
+  "info": {
+    "_postman_id": "kgconnect-api-collection",
+    "name": "KgConnect API",
+    "description": "Collection complète des APIs KgConnect pour développeurs frontend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "1"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"firstname\": \"Jean\",\n  \"lastname\": \"Dupont\",\n  \"phone\": \"+33612345678\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": ["{{base_url}}"],
+              "path": ["register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login_check",
+              "host": ["{{base_url}}"],
+              "path": ["login_check"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/me",
+              "host": ["{{base_url}}"],
+              "path": ["me"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users?page=1&order[firstname]=asc",
+              "host": ["{{base_url}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "order[firstname]",
+                  "value": "asc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/550e8400-e29b-41d4-a716-446655440000",
+              "host": ["{{base_url}}"],
+              "path": ["users", "550e8400-e29b-41d4-a716-446655440000"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/merge-patch+json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstname\": \"Jean-Pierre\",\n  \"phone\": \"+33687654321\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/550e8400-e29b-41d4-a716-446655440000",
+              "host": ["{{base_url}}"],
+              "path": ["users", "550e8400-e29b-41d4-a716-446655440000"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/550e8400-e29b-41d4-a716-446655440000",
+              "host": ["{{base_url}}"],
+              "path": ["users", "550e8400-e29b-41d4-a716-446655440000"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Trips",
+      "item": [
+        {
+          "name": "List Trips",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/trips?page=1&departureCountry=France&arrivalCountry=Spain&status=active",
+              "host": ["{{base_url}}"],
+              "path": ["trips"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "departureCountry",
+                  "value": "France"
+                },
+                {
+                  "key": "arrivalCountry",
+                  "value": "Spain"
+                },
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Trip Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/trips/660e8400-e29b-41d4-a716-446655440001",
+              "host": ["{{base_url}}"],
+              "path": ["trips", "660e8400-e29b-41d4-a716-446655440001"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Trip",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender\": \"/api/users/550e8400-e29b-41d4-a716-446655440000\",\n  \"departureCountry\": \"France\",\n  \"departureCity\": \"Paris\",\n  \"arrivalCountry\": \"Spain\",\n  \"arrivalCity\": \"Madrid\",\n  \"departureDate\": \"2026-03-20T10:00:00Z\",\n  \"availableWeight\": 50.5,\n  \"pricePerKg\": 2.5,\n  \"description\": \"Trajet sécurisé avec parking climatisé\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/trips",
+              "host": ["{{base_url}}"],
+              "path": ["trips"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Trip",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/merge-patch+json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availableWeight\": 45.0,\n  \"status\": \"completed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/trips/660e8400-e29b-41d4-a716-446655440001",
+              "host": ["{{base_url}}"],
+              "path": ["trips", "660e8400-e29b-41d4-a716-446655440001"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Trip",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/trips/660e8400-e29b-41d4-a716-446655440001",
+              "host": ["{{base_url}}"],
+              "path": ["trips", "660e8400-e29b-41d4-a716-446655440001"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reservations",
+      "item": [
+        {
+          "name": "List Reservations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations?page=1&status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["reservations"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reservation Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/770e8400-e29b-41d4-a716-446655440002",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "770e8400-e29b-41d4-a716-446655440002"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender\": \"/api/users/550e8400-e29b-41d4-a716-446655440000\",\n  \"trip\": \"/api/trips/660e8400-e29b-41d4-a716-446655440001\",\n  \"reservedWeight\": 10.5,\n  \"status\": \"pending\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reservations",
+              "host": ["{{base_url}}"],
+              "path": ["reservations"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Reservation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/merge-patch+json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\",\n  \"reservedWeight\": 12.0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reservations/770e8400-e29b-41d4-a716-446655440002",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "770e8400-e29b-41d4-a716-446655440002"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Reservation",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/770e8400-e29b-41d4-a716-446655440002",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "770e8400-e29b-41d4-a716-446655440002"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

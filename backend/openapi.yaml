@@ -1,0 +1,746 @@
+openapi: 3.0.0
+info:
+  title: KgConnect API
+  description: API pour gérer les trajets, réservations et utilisateurs de la plateforme KgConnect
+  version: 1.0.0
+  contact:
+    name: Support
+    email: support@kgconnect.com
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000/api
+    description: Serveur de développement
+  - url: https://api.kgconnect.com/api
+    description: Serveur de production
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtenu via /login_check
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique de l'utilisateur
+        email:
+          type: string
+          format: email
+          description: Adresse email
+        firstname:
+          type: string
+          description: Prénom
+        lastname:
+          type: string
+          description: Nom de famille
+        phone:
+          type: string
+          nullable: true
+          description: Numéro de téléphone
+        roles:
+          type: array
+          items:
+            type: string
+          description: Rôles de l'utilisateur
+      required:
+        - id
+        - email
+
+    Trip:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique du trajet
+        sender:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/User'
+          description: Utilisateur créateur du trajet
+        departureCountry:
+          type: string
+          description: Pays de départ
+        departureCity:
+          type: string
+          description: Ville de départ
+        arrivalCountry:
+          type: string
+          description: Pays d'arrivée
+        arrivalCity:
+          type: string
+          description: Ville d'arrivée
+        departureDate:
+          type: string
+          format: date-time
+          description: Date et heure de départ (ISO 8601)
+        availableWeight:
+          type: number
+          format: float
+          description: Poids disponible en kg
+        pricePerKg:
+          type: number
+          format: float
+          description: Prix par kilogramme
+        description:
+          type: string
+          nullable: true
+          description: Description du trajet
+        status:
+          type: string
+          enum: [active, completed, cancelled]
+          description: Statut du trajet
+        createdAt:
+          type: string
+          format: date-time
+          description: Date de création
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date de dernière modification
+      required:
+        - id
+        - sender
+        - departureCountry
+        - departureCity
+        - arrivalCountry
+        - arrivalCity
+        - departureDate
+        - availableWeight
+        - pricePerKg
+        - status
+
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique de la réservation
+        sender:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/User'
+          description: Utilisateur ayant fait la réservation
+        trip:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Trip'
+          description: Trajet réservé
+        reservedWeight:
+          type: number
+          format: float
+          description: Poids réservé en kg
+        totalPrice:
+          type: number
+          format: float
+          description: Prix total calculé (reservedWeight * trip.pricePerKg)
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, completed]
+          description: Statut de la réservation
+        createdAt:
+          type: string
+          format: date-time
+          description: Date de création
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date de dernière modification
+      required:
+        - id
+        - sender
+        - trip
+        - reservedWeight
+        - totalPrice
+        - status
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: Code d'erreur HTTP
+        message:
+          type: string
+          description: Message d'erreur
+        errors:
+          type: object
+          nullable: true
+          description: Détails des erreurs de validation
+
+    JWTToken:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token JWT à utiliser pour les requêtes authentifiées
+
+paths:
+  /register:
+    post:
+      tags:
+        - Authentication
+      summary: Créer un nouveau compte
+      description: Enregistre un nouvel utilisateur avec email et mot de passe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                firstname:
+                  type: string
+                lastname:
+                  type: string
+                phone:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        201:
+          description: Utilisateur créé avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        400:
+          description: Données invalides ou email déjà utilisé
+        422:
+          description: Validation échouée
+
+  /login_check:
+    post:
+      tags:
+        - Authentication
+      summary: Se connecter et obtenir un JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+              required:
+                - email
+                - password
+      responses:
+        200:
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWTToken'
+        401:
+          description: Email ou mot de passe incorrect
+
+  /me:
+    get:
+      tags:
+        - Authentication
+      summary: Récupérer les informations de l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Informations utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          description: Non authentifié
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Lister tous les utilisateurs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Numéro de page (pagination 30 par défaut)
+        - name: order[firstname]
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: order[email]
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: email
+          in: query
+          schema:
+            type: string
+          description: Filtre par email
+      responses:
+        200:
+          description: Liste des utilisateurs
+          content:
+            application/ld+json:
+              schema:
+                type: object
+        401:
+          description: Non authentifié
+
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Récupérer les détails d'un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Détails de l'utilisateur
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: Utilisateur non trouvé
+
+    patch:
+      tags:
+        - Users
+      summary: Mettre à jour un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                firstname:
+                  type: string
+                lastname:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        200:
+          description: Utilisateur mis à jour
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: Utilisateur non trouvé
+
+    delete:
+      tags:
+        - Users
+      summary: Supprimer un utilisateur
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        204:
+          description: Utilisateur supprimé
+        404:
+          description: Utilisateur non trouvé
+
+  /trips:
+    get:
+      tags:
+        - Trips
+      summary: Lister tous les trajets
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: order[departureDate]
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: order[pricePerKg]
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: departureCountry
+          in: query
+          schema:
+            type: string
+        - name: arrivalCountry
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, completed, cancelled]
+      responses:
+        200:
+          description: Liste des trajets
+          content:
+            application/ld+json:
+              schema:
+                type: object
+        401:
+          description: Non authentifié
+
+    post:
+      tags:
+        - Trips
+      summary: Créer un nouveau trajet
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sender:
+                  type: string
+                departureCountry:
+                  type: string
+                departureCity:
+                  type: string
+                arrivalCountry:
+                  type: string
+                arrivalCity:
+                  type: string
+                departureDate:
+                  type: string
+                  format: date-time
+                availableWeight:
+                  type: number
+                pricePerKg:
+                  type: number
+                description:
+                  type: string
+                status:
+                  type: string
+                  enum: [active, completed, cancelled]
+              required:
+                - sender
+                - departureCountry
+                - departureCity
+                - arrivalCountry
+                - arrivalCity
+                - departureDate
+                - availableWeight
+                - pricePerKg
+                - status
+      responses:
+        201:
+          description: Trajet créé
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        400:
+          description: Données invalides
+
+  /trips/{id}:
+    get:
+      tags:
+        - Trips
+      summary: Récupérer les détails d'un trajet
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Détails du trajet
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        404:
+          description: Trajet non trouvé
+
+    patch:
+      tags:
+        - Trips
+      summary: Mettre à jour un trajet
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              properties:
+                availableWeight:
+                  type: number
+                pricePerKg:
+                  type: number
+                description:
+                  type: string
+                status:
+                  type: string
+      responses:
+        200:
+          description: Trajet mis à jour
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        404:
+          description: Trajet non trouvé
+
+    delete:
+      tags:
+        - Trips
+      summary: Supprimer un trajet
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        204:
+          description: Trajet supprimé
+        404:
+          description: Trajet non trouvé
+
+  /reservations:
+    get:
+      tags:
+        - Reservations
+      summary: Lister toutes les réservations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: order[createdAt]
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: order[totalPrice]
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled, completed]
+      responses:
+        200:
+          description: Liste des réservations
+          content:
+            application/ld+json:
+              schema:
+                type: object
+        401:
+          description: Non authentifié
+
+    post:
+      tags:
+        - Reservations
+      summary: Créer une nouvelle réservation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sender:
+                  type: string
+                trip:
+                  type: string
+                reservedWeight:
+                  type: number
+                status:
+                  type: string
+                  enum: [pending, confirmed, cancelled, completed]
+              required:
+                - sender
+                - trip
+                - reservedWeight
+                - status
+      responses:
+        201:
+          description: Réservation créée
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        400:
+          description: Données invalides
+
+  /reservations/{id}:
+    get:
+      tags:
+        - Reservations
+      summary: Récupérer les détails d'une réservation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Détails de la réservation
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        404:
+          description: Réservation non trouvée
+
+    patch:
+      tags:
+        - Reservations
+      summary: Mettre à jour une réservation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              properties:
+                reservedWeight:
+                  type: number
+                status:
+                  type: string
+      responses:
+        200:
+          description: Réservation mise à jour
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        404:
+          description: Réservation non trouvée
+
+    delete:
+      tags:
+        - Reservations
+      summary: Supprimer une réservation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        204:
+          description: Réservation supprimée
+        404:
+          description: Réservation non trouvée
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Authentication
+    description: Endpoints d'authentification
+  - name: Users
+    description: Gestion des utilisateurs
+  - name: Trips
+    description: Gestion des trajets
+  - name: Reservations
+    description: Gestion des réservations

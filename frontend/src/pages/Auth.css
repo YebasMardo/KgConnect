@@ -49,6 +49,8 @@
   border: 1px solid var(--border);
   font-size: 15px;
   transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-group input:focus {

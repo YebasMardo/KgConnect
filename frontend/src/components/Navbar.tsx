@@ -5,12 +5,20 @@ import './Navbar.css';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
+  const isAuthenticated = !!localStorage.getItem('token');
   
-  const navItems = [
+  const authNavItems = [
     { label: 'Tableau de bord', path: '/dashboard' },
     { label: 'Mes envois', path: '/envois' },
     { label: 'Messages', path: '/messages' },
   ];
+
+  const guestNavItems = [
+    { label: 'Accueil', path: '/' },
+    { label: 'Proposer un trajet', path: '/proposer-trajet' },
+  ];
+
+  const navItems = isAuthenticated ? authNavItems : guestNavItems;
 
   return (
     <nav className="navbar">
@@ -41,19 +49,28 @@ const Navbar: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="icon-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-          </button>
-          <button 
-            className="avatar" 
-            onClick={() => { authService.logout(); window.location.href = '/connexion'; }}
-            title="Se déconnecter"
-          >
-            JD
-          </button>
+          {isAuthenticated ? (
+            <>
+              <button className="icon-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+              </button>
+              <button 
+                className="avatar" 
+                onClick={() => { authService.logout(); window.location.href = '/connexion'; }}
+                title="Se déconnecter"
+              >
+                JD
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/connexion" className="nav-link">Connexion</Link>
+              <Link to="/inscription" className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Inscription</Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

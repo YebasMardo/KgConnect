@@ -63,7 +63,7 @@ const Register: React.FC = () => {
                 onChange={handleChange}
                 required
                 disabled={loading}
-              />
+              /> 
             </div>
             <div className="form-group flex flex-col gap-2 flex-grow">
               <label htmlFor="lastname">Nom</label>
